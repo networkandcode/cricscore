@@ -23,7 +23,7 @@ const Login = () => {
     }
     
     return (
-        <div className="max-w-sm w-full">
+        <div className="max-w-xl w-full">
             <form className="m-8 p-8 rounded shadow-md text-gray-500" onSubmit={e => { e.preventDefault();state.userLogin(username, password) }}>
                 <div className="mb-4">
                     <label className="block text-sm" htmlFor="username"> Username </label>

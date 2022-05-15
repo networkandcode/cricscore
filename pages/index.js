@@ -27,7 +27,7 @@ const Home = () => {
                     Hi { state?.user?.name }
                 </h1>
                 
-                <Link href="/match"><a>
+                <Link href="/new-match"><a>
                     <button className="bg-blue-500 font-bold hover:bg-blue-600 px-4 py-2 rounded text-white " type="button">
                         New match
                     </button>
@@ -41,7 +41,7 @@ const Home = () => {
                 { matches.map( i => (
                     <div className="flex font-bold justify-between my-4 text-xl text-gray-500" key={i.$id}>
                         <span>
-                            <Link href={`/score/${i.$id}`}><a>
+                            <Link href={`/match/${i.$id}`}><a>
                                 {i.matchName} {i.matchStatus}
                                 <p className="text-sm"> { i.teamAName } vs { i.teamBName } </p>
                                 <p className="text-xs"> { i.matchPlace } </p>
