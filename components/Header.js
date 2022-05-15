@@ -11,17 +11,27 @@ const Header = () => {
     return (
         
         
-        <div className="bg-gray-500 flex justify-end space-x-4 p-2 text-white w-full">
-            <Link href="/"><a> Match </a></Link>
+        <div className="bg-gray-500 flex italic justify-end space-x-4 p-2 text-xl text-white w-full">
+            <Link href="/"><a> Cricscore </a></Link>
             
             { state?.user?.$id ? (
                 <>
                     <button onClick={state.userLogout}> Logout </button>
                 </>
             ) : (
-                <Link href="/signup"><a>
-                    Signup
-                </a></Link>
+                <>
+                    { router.route !== '/login' && (
+                        <Link href="/login"><a>
+                            Login
+                        </a></Link>
+                    )}
+                    
+                    { router.route !== '/signup' && (
+                        <Link href="/signup"><a>
+                            Signup
+                        </a></Link>
+                    )}
+                </>
             )}
         </div>
         

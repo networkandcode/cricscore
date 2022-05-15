@@ -1,9 +1,10 @@
 import MatchForm from '../components/MatchForm'
 import { useCentralState } from '../hooks/useCentralState'
+import { NewMatchProvider } from '../hooks/useNewMatchState'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
-const Match = () => {
+const NewMatch = () => {
     const router = useRouter()
     const state = useCentralState()
     
@@ -13,7 +14,11 @@ const Match = () => {
         }
     }, [])
     
-    return <MatchForm/>
+    return (
+        <NewMatchProvider>
+            <MatchForm/>
+        </NewMatchProvider>
+    )
 }
 
-export default Match
+export default NewMatch

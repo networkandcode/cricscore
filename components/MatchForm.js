@@ -1,16 +1,16 @@
 import TeamForm from '../components/TeamForm'
 import TossForm from '../components/TossForm'
-import { useMatchState } from '../hooks/useMatchState'
+import { useNewMatch } from '../hooks/useNewMatchState'
 
 const MatchForm = () => {
     
     const {
         formNumber,
         incFormNumber,
-        matchState,
+        newMatch,
         onChange,
         redFormNumber,
-    } = useMatchState()
+    } = useNewMatch()
     
     if (formNumber !== 1) {
         if(formNumber === 2) {
@@ -39,7 +39,7 @@ const MatchForm = () => {
                     PREV
                 </button>
                 {formNumber}/4
-                <button className="bg-blue-500 font-bold px-2 py-1 rounded text-white disabled:bg-gray-500 hover:bg-blue-600" disabled={formNumber === 4} type="submit">
+                <button className="bg-blue-500 font-bold px-2 py-1 rounded text-white disabled:bg-gray-500 hover:bg-blue-600" disabled={ formNumber === 4 || !newMatch.matchName || !newMatch.matchNoOfOvers || !newMatch.matchNoOfPlayers } type="submit">
                     NEXT
                 </button>
             </div>
@@ -51,22 +51,22 @@ const MatchForm = () => {
                 </p>
                 <div className="mb-4">
                     <label className="block" htmlFor="matchName"> Name of the match </label>
-                    <input className="border p-2 rounded w-full focus:outline-blue-500" id="matchName" name="matchName" onChange={onChange} placeholder="Name(unique) of the match" required type="text" value={matchState.matchName} />
+                    <input className="border p-2 rounded w-full focus:outline-blue-500" id="matchName" name="matchName" onChange={onChange} placeholder="Name(unique) of the match" required type="text" value={newMatch.matchName} />
                 </div>
                 
                 <div className="mb-4">
                     <label htmlFor="matchNoOfOvers"> Number of overs </label>
-                    <input className="border border-gray-500 p-1 rounded w-10 focus:outline-blue-500" id="matchNoOfOvers" max={50} min={3} name="matchNoOfOvers" onChange={onChange} required type="number" value={matchState.matchNoOfOvers} />
+                    <input className="border border-gray-500 p-1 rounded w-10 focus:outline-blue-500" id="matchNoOfOvers" max={50} min={3} name="matchNoOfOvers" onChange={onChange} required type="number" value={newMatch.matchNoOfOvers} />
                 </div>
                 
                 <div className="mb-4">
                     <label htmlFor="matchNoOfPlayers"> Number of players per team </label>
-                    <input className="border border-gray-500 p-1 rounded w-10 focus:outline-blue-500" id="matchNoOfPlayers" max={11} min={3} name="matchNoOfPlayers" onChange={onChange} required type="number" value={matchState.matchNoOfPlayers} />
+                    <input className="border border-gray-500 p-1 rounded w-10 focus:outline-blue-500" id="matchNoOfPlayers" max={11} min={3} name="matchNoOfPlayers" onChange={onChange} required type="number" value={newMatch.matchNoOfPlayers} />
                 </div>
                 
                 <div className="mb-4">
                     <label className="block" htmlFor="matchPlace"> Place </label>
-                    <input className="border p-2 rounded w-full focus:outline-blue-500" id="matchPlace" name="matchPlace" onChange={onChange} placeholder="Where is the match happening" required value={matchState.matchPlace} />
+                    <input className="border p-2 rounded w-full focus:outline-blue-500" id="matchPlace" name="matchPlace" onChange={onChange} placeholder="Where is the match happening" required value={newMatch.matchPlace} />
                 </div>
             </div>
             

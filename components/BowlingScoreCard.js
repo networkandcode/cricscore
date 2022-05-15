@@ -1,4 +1,5 @@
-import { useMatchState } from '../hooks/useMatchState'
+import { useBallStateContext } from '../hooks/useBallState'
+import { useEffect, useState } from 'react'
 
 const InningsBowlingScoreCard = ({ overs }) => (
     <table className="table-auto">
@@ -13,7 +14,7 @@ const InningsBowlingScoreCard = ({ overs }) => (
         <tbody>
             {overs.map((i, idx) => (
                 <tr className="border-b-4" key={`${i}-${idx}`}>
-                    <td>{i.over}</td>
+                    <td>{ i.balls === 6 ? i.over + 1 : `${i.over}.${i.balls}` }</td>
                     <td>{i.bowler}</td>
                     <td>{i.runs}</td>
                     <td>{i.wickets}</td>
@@ -25,21 +26,29 @@ const InningsBowlingScoreCard = ({ overs }) => (
 
 const BowlingScoreCard = ({ innings }) => {
     
-    const { overs } = useMatchState()
+    const { firstInningsOvers, firstInningsRuns, firstInningsWickets, secondInningsOvers, secondInningsRuns, secondInningsWickets } = useBallStateContext()
     
-    let inningsOvers = []
+    const [ inningsOvers, setInningsOvers ]= useState([])
     
-    overs.forEach( i => {
-        if(i.innings === innings) {
-            inningsOvers.push(i)
+    useEffect(() => {
+        if(innings === 1) {
+            setInningsOvers([ ...firstInningsOvers ])
+        } else if(innings === 2) {
+            setInningsOvers([ ...secondInningsOvers ])
         }
-    })
+    },[ firstInningsOvers, innings, secondInningsOvers ])
     
     return (
         <div>
-            <p className="font-bold mt-2 text-gray-500 text-sm"> Bowling score card:</p>
             { inningsOvers.length > 0 && (
-                <InningsBowlingScoreCard overs={inningsOvers} />
+                <>
+                    <p className="font-bold mt-2 text-gray-500 text-sm"> Bowling score card:</p>
+                    <InningsBowlingScoreCard overs={inningsOvers} />
+                    <div className="mt-2">
+                        <span className="font-bold text-gray-500 text-xl"> Score:</span> <span className="font-bold text-blue-500 text-xl">
+                        { innings === 1 ? firstInningsRuns : secondInningsRuns }/{ innings === 1 ? firstInningsWickets : secondInningsWickets } </span>
+                    </div>
+                </>
             )}
         </div>
     )

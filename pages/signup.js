@@ -35,8 +35,8 @@ const Signup = () => {
     }
     
     return (
-        
-            <form className="m-2 p-2 rounded shadow-md text-gray-500" onSubmit={onSubmit}>
+        <div className="max-w-xl w-full">
+            <form className="m-8 p-8 rounded shadow-md text-gray-500" onSubmit={onSubmit}>
                 <div className="mb-4">
                     <label className="block" htmlFor="username"> Name </label>
                     <input className="border p-2 rounded w-full focus:outline-blue-500" id="name" name="name" onChange={e => { state.clearStatus(); setName(e.target.value) }} value={name} />
@@ -58,7 +58,7 @@ const Signup = () => {
                 
                 <button className="bg-blue-500 font-bold px-4 py-2 rounded text-white disabled:bg-gray-500 hover:bg-blue-600" disabled={!name || !username || !password} type="submit"> Signup </button>
             </form>
-        
+        </div>
     )
 }
 

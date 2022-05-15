@@ -1,6 +1,6 @@
 // components/BattingScoreCard.js
 
-import { useMatchState } from '../hooks/useMatchState'
+import { useBatStateContext } from '../hooks/useBatState'
 import { useEffect, useState } from 'react'
 
 const InningsBattingScoreCard = ({ battingScoreCard }) => (
@@ -27,13 +27,11 @@ const InningsBattingScoreCard = ({ battingScoreCard }) => (
 )
 
 const BattingScoreCard = ({ innings }) => {
+    const { battingScoreCard } = useBatStateContext()
     
-    const { battingScoreCard } = useMatchState()
-    
-    const[ inningsBattingScoreCard, setInningsBattingScoreCard ] = useState([])
+    const [ inningsBattingScoreCard, setInningsBattingScoreCard ] = useState([])
     
     useEffect(()=> {
-        
         let temp = []
         battingScoreCard.forEach( i => {
             if( i.innings === innings ) {
@@ -42,15 +40,16 @@ const BattingScoreCard = ({ innings }) => {
         })
         
         setInningsBattingScoreCard([...temp])
-        
     }, [ battingScoreCard ])
     
     
     return (
         <div>
-            <p className="font-bold mt-2 text-gray-500 text-sm"> Batting score card: </p>
             { inningsBattingScoreCard.length > 0 && (
-                <InningsBattingScoreCard battingScoreCard={inningsBattingScoreCard} />
+                <>
+                    <p className="font-bold mt-2 text-gray-500 text-sm"> Batting score card: </p>
+                    <InningsBattingScoreCard battingScoreCard={inningsBattingScoreCard} />
+                </>
             )}
         </div>
     )

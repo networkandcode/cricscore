@@ -1,25 +1,23 @@
 // components/MatchSummary.js
 
+import { useBallStateContext } from '../hooks/useBallState'
 import { useMatchState } from '../hooks/useMatchState'
 import { useEffect } from 'react'
 
 const MatchSummary = () => {
     
-    const { firstBattingTeam, firstInningsRuns, matchState, secondBattingTeam, secondInningsOvers, secondInningsRuns, secondInningsWickets, updateMatchStatus } = useMatchState()
+    const { firstInningsRuns, secondInningsOvers, secondInningsRuns, secondInningsWickets } = useBallStateContext()
+    const { firstBattingTeam, matchState, updateMatchStatus } = useMatchState()
     
     useEffect(() => {
-        if(secondInningsRuns > firstInningsRuns) {
-            updateMatchStatus({ ...matchState, matchStatus: 'Ended', winner: secondBattingTeam })
-        } else if( 
-            ( (secondInningsOvers === matchState.matchNoOfOvers) || (secondInningsWickets === matchState.matchNoOfPlayers - 1) )
-        ){
+        if( secondInningsOvers === matchState.matchNoOfOvers ) {
             if(firstInningsRuns > secondInningsRuns) {
                 updateMatchStatus({ ...matchState, matchStatus: 'Ended', winner: firstBattingTeam })
             } else if(firstInningsRuns === secondInningsRuns) {
                 updateMatchStatus({ ...matchState, matchStatus: 'Ended', winner: "Both  teams, its a Tie" })
             }
         }
-    }, [ secondInningsRuns ])
+    }, [ secondInningsOvers, secondInningsRuns ])
     
     return (
         matchState.winner ? (
