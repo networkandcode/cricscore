@@ -14,18 +14,9 @@ const Score = () => {
         matchState,
     } = useMatchState()
     
+    const { firstBattingTeam, secondBattingTeam } = useMatchState()
     const [ firstInningBatsmen, setFirstInningBatsmen ] = useState([])
     const [ secondInningBatsmen, setSecondInningBatsmen ] = useState([])
-    
-    const [ score, setScore ] = useState({
-        nonStriker: '',
-        striker: ''
-    })
-    
-    const onChange = e => {
-        const { name, value } = e.target
-        setScore({ ...score, [name]: value })
-    }
     
     useEffect(() => {
         if(matchState.tossWinner === matchState.teamAName) {
@@ -60,15 +51,15 @@ const Score = () => {
                 
                 
                 <div className="mb-4 p-4 rounded shadow-md text-gray-500">
-                    <p className="font-bold text-blue-500 text-xl"> First batting: </p>
-                    <BattingScoreCard innings={1} />
+                    <p className="font-bold text-blue-500 text-xl"> First batting, { firstBattingTeam }: </p>
+                    <BattingScoreCard innings={1} team={firstBattingTeam} />
                     <BowlingScoreCard innings={1} />
                 </div>
                 
                 
                 <div className="mb-4 p-4 rounded shadow-md text-gray-500">
-                    <p className="font-bold text-blue-500 text-xl"> Second batting: </p>
-                    <BattingScoreCard innings={2} />
+                    <p className="font-bold text-blue-500 text-xl"> Second batting, { secondBattingTeam }: </p>
+                    <BattingScoreCard innings={2} team={secondBattingTeam} />
                     <BowlingScoreCard innings={2} />
                 </div>
             </BallStateProvider>

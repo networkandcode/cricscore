@@ -20,9 +20,9 @@ const useBatStateProvider = () => {
     const [ battingScoreCard, setBattingScoreCard ] = useState([])
     const [ innings, setInnings ] = useState()
     const [ matchID, setMatchID ] = useState('')
-    const [ nonStriker, setNonStriker ] = useState({ balls: 0, batsman: '', batsmanNo: 2, innings, matchID: '', out: false, position: 'nonStriker', runs: 0 })
-    const [ status, setStatus ] = useState({})
-    const [ striker, setStriker ] = useState({ balls: 0, batsman: '', batsmanNo: 1, innings, matchID: '', out: false, position: 'striker', runs: 0 })
+    const [ nonStriker, setNonStriker ] = useState({ })
+    const [ status, setStatus ] = useState({ })
+    const [ striker, setStriker ] = useState({ })
     
     const onChangeNonStriker = e => {
         const { name, value } = e.target
@@ -70,12 +70,12 @@ const useBatStateProvider = () => {
         
         if(!nonStrikerFound) {
             console.log('Non  striker not found')
-            setNonStriker({ balls: 0, batsman: '', batsmanNo: 2, innings, matchID, out: false, position: 'nonStriker', runs: 0 })
+            setNonStriker({ $id: '', balls: 0, batsman: '', batsmanNo: 2, innings, matchID, out: false, position: 'nonStriker', runs: 0 })
         }
         
         if(!strikerFound){
             console.log('Striker not found')
-            setStriker({ balls: 0, batsman: '', batsmanNo: 1, innings, matchID, out: false, position: 'striker', runs: 0 })
+            setStriker({ $id: '', balls: 0, batsman: '', batsmanNo: 1, innings, matchID, out: false, position: 'striker', runs: 0 })
             
         }
     }
@@ -83,13 +83,13 @@ const useBatStateProvider = () => {
     const updateBattingScore = async( batsmanData ) => {
         let promise
         
-        console.log(batsmanData)
-        if(batsmanData.$id) {
+        const { $id, ...batsmanDataWithOutId } = batsmanData
+        if($id) {
             console.log('updating batsmanData')
-            promise = appwrite.database.updateDocument(server.batScoreCollectionID, batsmanData.$id, { ...batsmanData })
+            promise = appwrite.database.updateDocument(server.batScoreCollectionID, $id, { ...batsmanData })
         } else {
             console.log('creating batsmanData')
-            promise = appwrite.database.createDocument(server.batScoreCollectionID, 'unique()', { ...batsmanData })
+            promise = appwrite.database.createDocument(server.batScoreCollectionID, 'unique()', { ...batsmanDataWithOutId })
         }
         
         await promise.then(
@@ -98,6 +98,72 @@ const useBatStateProvider = () => {
                     setStriker({ ...res })
                 } else if(batsmanData.position === 'nonStriker') {
                     setNonStriker({ ...res })
+                } 
+                setStatus({ res: 'Update successful' , err: '' })
+            },
+            err => {
+                setStatus({ res: '', err: 'Update unsuccessful' })
+                console.log(err.message)
+            }
+        )
+    }
+    
+    const batsmanOut =  async( position, batsmanData, nextBatsman ) => {
+        console.log(batsmanData)
+        console.log('next batsman', nextBatsman)
+        let promise
+        
+        const { $id, ...batsmanDataWithOutId } = batsmanData
+    
+        if($id) {
+            console.log('updating batsmanData')
+            promise = appwrite.database.updateDocument(server.batScoreCollectionID, $id, { ...batsmanData })
+        } else {
+            console.log('creating batsmanData')
+            promise = appwrite.database.createDocument(server.batScoreCollectionID, 'unique()', { ...batsmanDataWithOutId })
+        }
+        
+        await promise.then(
+            res => {
+                if(position === 'nonStriker') {
+                    let temp = battingScoreCard
+                    let nonStrikerIdx
+                    
+                    temp.forEach( (i, idx) => {
+                        if( i.matchID === nonStriker.matchID && i.innings === nonStriker.innings && i.batsmanNo === nonStriker.batsmanNo ) {
+                            nonStrikerIdx = idx
+                        }
+                    })
+                    
+                    temp[nonStrikerIdx] = { ...temp[nonStrikerIdx], ...batsmanData, $id: res.$id }
+                    temp = [ ...temp ]
+                    
+                    setBattingScoreCard([ ...temp ])
+                    if(nextBatsman) {
+                        setNonStriker({ ...nextBatsman })
+                    } else {
+                        setNonStriker({ ...nonStriker, $id: res.$id, out: true })
+                    }
+                } else if(position === 'striker') {
+                    let temp = battingScoreCard
+                    let strikerIdx
+                    
+                    temp.forEach( (i, idx) => {
+                        if( i.matchID === striker.matchID && i.innings === striker.innings && i.batsmanNo === striker.batsmanNo ) {
+                            strikerIdx = idx
+                        }
+                    })
+                    
+                    temp[strikerIdx] = { ...temp[strikerIdx], ...batsmanData, $id: res.$id }
+                    temp = [ ...temp ]
+                    
+                    setBattingScoreCard([ ...temp ])
+                    if(nextBatsman) {
+                        console.log(nextBatsman, 'set striker')
+                        setStriker({ ...nextBatsman })
+                    } else {
+                        setStriker({ ...striker, $id: res.$id, out: true })
+                    }
                 }
                 setStatus({ res: 'Update successful' , err: '' })
             },
@@ -106,6 +172,10 @@ const useBatStateProvider = () => {
                 console.log(err.message)
             }
         )
+    }
+    
+    const updateBatInnings = (n) => {
+        setInnings(n)
     }
     
     const updateBattingScoreState = () => {
@@ -171,6 +241,8 @@ const useBatStateProvider = () => {
         if(matchState.matchStatus === 'Second batting started') {
             console.log('Set innings 2')
             setInnings(2)
+            setNonStriker({ $id: '', balls: 0, batsman: '', batsmanNo: 2, innings: 2, matchID, out: false, position: 'nonStriker', runs: 0 })
+            setStriker({ $id: '', balls: 0, batsman: '', batsmanNo: 1, innings: 2, matchID, out: false, position: 'striker', runs: 0 })
         } else {
             console.log('Set innings 1')
             setInnings(1)
@@ -192,11 +264,13 @@ const useBatStateProvider = () => {
     }, [ nonStriker, striker ])
     
     return {
+        batsmanOut,
         battingScoreCard,
         nonStriker,
         onChangeNonStriker,
         onChangeStriker,
         striker,
+        updateBatInnings,
         updateBattingScore,
         updateNonStriker,
         updateStriker

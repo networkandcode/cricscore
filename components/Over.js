@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 
 const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
     const {
+        batsmanOut,
         nonStriker,
         striker,
         updateBattingScore,
@@ -22,6 +23,7 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
         firstInningsRuns, 
         firstInningsWickets, 
         innings, 
+        inningsWickets,
         secondInningsCurrentOver, 
         secondInningsOvers,
         secondInningsRuns, 
@@ -29,7 +31,7 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
         updateInnings, 
         updateOvers
     } = useBallStateContext()
-    const { matchState, secondBattingTeam, updateMatchStatus } = useMatchState()
+    const { matchState, firstBattingTeam, secondBattingTeam, updateMatchStatus } = useMatchState()
     
     const [ batsmen, setBatsmen ] = useState([])
     const [ next, setNext ] = useState({})
@@ -157,6 +159,8 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
             wickets: state.wicketType ? wickets + 1 : wickets
         }
         updateOvers(overState)
+        
+        console.log('innings wickets', inningsWickets)
     }
     
     const nextOver = () => {
@@ -173,15 +177,13 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
         
         addOver(overState)
         
-        if(over !== matchState.matchNoOfOvers && state.ballNo === 6) {
-            console.log('rotate strike, next over')
-            updateBattingScore({ ...striker, position: 'nonStriker' })
-            updateBattingScore({ ...nonStriker, position: 'striker' })
-            setRotateStrike(true)
-        } else {
-            updateBattingScore(striker)
-            updateBattingScore(nonStriker)
-        }
+        console.log('striker', striker)
+         
+        console.log('innings wickets', inningsWickets)
+        
+        console.log(striker, nonStriker)
+        updateBattingScore(striker)
+        updateBattingScore(nonStriker)
         
         console.log('Reset ball state')
         setState({
@@ -197,14 +199,23 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
         setRuns(0)
         setWickets(0)
         
-        if( innings === 1 && ( parseInt(firstInningsCurrentOver) === matchState.matchNoOfOvers || firstInningsWickets === matchState.matchNoOfPlayers ) ){
+        if( innings === 1 && ( parseInt(firstInningsCurrentOver) === matchState.matchNoOfOvers || firstInningsWickets === matchState.matchNoOfPlayers - 1) ){
             console.log('Second innings...')
             updateInnings(2)
             updateMatchStatus({ matchStatus: 'Second batting started' })
         }
         
-        if( innings === 2 && ( secondInningsRuns > firstInningsRuns ) ) {
-            updateMatchStatus({ ...matchState, matchStatus: 'Ended', winner: secondBattingTeam })
+        if( innings === 2 ) {
+            if( secondInningsRuns > firstInningsRuns ) {
+                updateMatchStatus({ ...matchState, matchStatus: 'Ended', winner: secondBattingTeam })
+            } else if( (firstInningsRuns > secondInningsRuns) && (secondInningsWickets === matchState.matchNoOfPlayers - 1) ) {
+                updateMatchStatus({ ...matchState, matchStatus: 'Ended', winner: firstBattingTeam })
+            }
+        }
+        
+        if(over !== matchState.matchNoOfOvers && state.ballNo === 6 && innings !== matchState.matchNoOfPlayers - 1) {
+            console.log('rotate strike, next over')
+            setRotateStrike(true)
         }
     }
     
@@ -269,7 +280,6 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
         
         if(rotateStrike){
             console.log('rotate strike')
-            const temp = { ...striker }
             updateStriker({...nonStriker, position: 'striker'})
             updateNonStriker({...striker, position: 'nonStriker'})
         }
@@ -277,26 +287,48 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
     }, [ rotateStrike ])
     
     useEffect(() => {
-        if(wickets >= 1){
+        if(wickets >= 1) {
+            console.log('Wickets change', firstInningsWickets, secondInningsWickets)
+            let batsmanNo
+            
+            console.log( next, striker, nonStriker )
+            
+            if(innings === 1) {
+                batsmanNo = firstInningsWickets + 2
+            } else if(innings === 2){
+                batsmanNo = secondInningsWickets + 2
+            }
             if(next.position === 'striker') {
-                updateBattingScore({ ...nonStriker })
-                updateBattingScore({ ...striker, out: true, position: '' })
-                updateStriker({ ...next, batsmanNo: wickets + 2 })
-            } if(next.position === 'nonStriker') {
-                updateBattingScore({ ...nonStriker, out: true })
-                updateBattingScore({ ...striker })
-                updateNonStriker({ ...next, batsmanNo: wickets + 2 })
+                batsmanOut('striker', { ...striker, out: true, position: '' }, { ...next, $id: '', batsmanNo })
+                // updateBattingScore({ ...nonStriker })
             }
             
-            if(innings === 2 && wickets === (matchState.matchNoOfPlayers - 1) ) {
-                setMatchEnded(true)
+            if(next.position === 'nonStriker') {
+                batsmanOut('nonStriker', { ...nonStriker, out: true, position: '' }, { ...next, $id: '', batsmanNo })
+                // updateBattingScore({ ...striker })
+            } 
+            
+            if (!next.position) {
+                if(rotateStrike) {
+                    batsmanOut('nonStriker', { ...nonStriker, out: true, position: '' })
+                } else {
+                    batsmanOut('striker', { ...striker, out: true, position: '' })
+                }
             }
+            
+            /*if(innings === 2 && wickets === (matchState.matchNoOfPlayers - 1) ) {
+                setMatchEnded(true)
+            }*/
+            
+            // reset next batsman
+            setNext({})
+            
             if(state.rotateStrike){
                 setRotateStrike(true)
                 setState({ ...state, rotateStrike: false })
             }
         }
-    }, [ wickets ])
+    }, [ firstInningsWickets, secondInningsWickets ])
     
     useEffect(() => {
         if(innings === 1) {
@@ -305,7 +337,7 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
                 || 
                 ( firstInningsWickets === (matchState.matchNoOfPlayers - 1 ) )
             ) {
-                setNextOverButtonText('Second batting')
+                setNextOverButtonText('Start second batting')
             } else if (state.ballNo === 6) {
                 setNextOverButtonText('Next over')    
             } else {
@@ -389,7 +421,7 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
                         </div>
                     )}
                     
-                    { state.wicketType && (
+                    { (state.wicketType && ( (innings === 1 && firstInningsWickets !== matchState.matchNoOfPlayers - 2) || (innings === 2 && secondInningsWickets !== matchState.matchNoOfPlayers - 2) ) )&& (
                         <div className="mb-2">
                             <label htmlFor="nextBatsman"> Choose next batsman: </label>
                             <select className="border p-2 rounded w-full focus:outline-blue-500" id="nextBatsman" name="batsman" onChange={onChangeNextBatsman} value={next.batsman}>
@@ -443,7 +475,22 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
                 
                     <button 
                         className="bg-blue-500 font-bold px-2 py-1 rounded text-white disabled:bg-gray-500 hover:bg-blue-600"
-                        disabled={ state.ballNo === 6  || (state.wicketType && !next.batsman) || nextOverButtonText }
+                        disabled={ 
+                            state.ballNo === 6  
+                            || 
+                            (state.wicketType 
+                                && 
+                                !next.batsman
+                                &&
+                                (
+                                    ( innings === 1 && firstInningsWickets < matchState.matchNoOfPlayers - 2 )
+                                    ||
+                                    ( innings === 2 && secondInningsWickets < matchState.matchNoOfPlayers - 2 )
+                                )
+                            ) 
+                            ||
+                            nextOverButtonText
+                        }
                         onClick={addScore}
                     >
                         Add
@@ -473,6 +520,15 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
             </div>
             
             </>)}
+            
+            { matchState.matchStatus !== 'Ended' && nextOverButtonText && (
+                <button 
+                    className="bg-blue-500 font-bold ml-2 px-2 py-1 rounded text-white disabled:bg-gray-500 hover:bg-blue-600"
+                    onClick={nextOver}
+                >
+                    { nextOverButtonText }
+                </button>
+            )}
                 
         </div>
     )

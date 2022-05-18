@@ -23,8 +23,8 @@ const MatchSummary = () => {
         matchState.winner ? (
             <div className="mb-4 p-4 rounded shadow-md text-gray-500">
                 <p className="font-bold text-blue-500 text-xl"> Match summary: </p>
-                <p> Status: { matchState.matchStatus } </p>
-                <p> Winner: { matchState.winner } </p>
+                <p> Toss winner: { matchState.tossWinner } </p>
+                <p> Match winner: { matchState.winner } </p>
             </div>
         ) : (
             <></>

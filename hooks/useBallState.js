@@ -25,6 +25,7 @@ const useBallStateProvider = () => {
     const [ firstInningsRuns, setFirstInningsRuns ] = useState(0)
     const [ firstInningsWickets, setFirstInningsWickets ] = useState(0)
     const [ innings, setInnings ] = useState(1)
+    const [ inningsWickets, setInningsWickets ] = useState(0)
     const [ matchID, setMatchID ] = useState('')
     const [ overs, setOvers ] = useState([])
     const [ secondInningsCurrentOver, setSecondInningsCurrentOver ] = useState('')
@@ -167,8 +168,18 @@ const useBallStateProvider = () => {
                 console.log('Set innings from match state')
                 setInnings(2)
             }
+        } else if(matchState.matchStatus === 'Started') {
+            setInnings(1)
         }
     }, [ matchState ])
+    
+    useEffect(() => {
+        if(innings === 1) {
+            setInningsWickets(firstInningsWickets)
+        } else if(innings === 2) {
+            setInningsWickets(secondInningsWickets)
+        }
+    }, [ firstInningsWickets, innings, secondInningsWickets ])
     
     return {
         addOver,
@@ -177,6 +188,7 @@ const useBallStateProvider = () => {
         firstInningsRuns,
         firstInningsWickets,
         innings,
+        inningsWickets,
         overs,
         secondInningsCurrentOver,
         secondInningsOvers,

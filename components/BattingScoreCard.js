@@ -18,7 +18,7 @@ const InningsBattingScoreCard = ({ battingScoreCard }) => (
                         { i.runs } ({ i.balls })
                     </td>
                     <td>
-                        { i.out ? 'Out' : 'Not out' }
+                        { i.out === true ? 'Out' : 'Not out' }
                     </td>
                 </tr>
             ))}
