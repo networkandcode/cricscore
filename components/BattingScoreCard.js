@@ -9,7 +9,7 @@ const InningsBattingScoreCard = ({ battingScoreCard }) => (
             { battingScoreCard.sort( (a,b) => (a.batsmanNo - b.batsmanNo) )   && battingScoreCard.map((i, idx) => (
                 <tr className="border-b-4" key={`${i}-${idx}`}>
                     <td>
-                        { i.batsmanNo }
+                        { i.batsmanNo } { i.position }
                     </td>
                     <td>
                         { i.batsman }

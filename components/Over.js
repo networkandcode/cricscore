@@ -123,6 +123,7 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
             updateStriker({ ...striker, balls: striker.balls + 1 })
         }
         
+        
         if(runsPerBall % 2 !== 0 && state.ballNo < 6){
             console.log('rotate strike, ball < 6')
             setRotateStrike(true)
@@ -181,9 +182,16 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
          
         console.log('innings wickets', inningsWickets)
         
-        console.log(striker, nonStriker)
-        updateBattingScore(striker)
-        updateBattingScore(nonStriker)
+        
+        if(over !== matchState.matchNoOfOvers && state.ballNo === 6 && inningsWickets !== matchState.matchNoOfPlayers - 1) {
+            console.log('rotate strike, next over')
+            updateBattingScore(nonStriker, striker, true)
+        } else {
+            updateBattingScore(nonStriker, striker, false)
+        }
+        //console.log(striker, nonStriker)
+        // updateBattingScore(nonStriker, striker)
+        //updateBattingScore(nonStriker)
         
         console.log('Reset ball state')
         setState({
@@ -213,10 +221,10 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
             }
         }
         
-        if(over !== matchState.matchNoOfOvers && state.ballNo === 6 && innings !== matchState.matchNoOfPlayers - 1) {
+        /*if(over !== matchState.matchNoOfOvers && state.ballNo === 6 && inningsWickets !== matchState.matchNoOfPlayers - 1) {
             console.log('rotate strike, next over')
             setRotateStrike(true)
-        }
+        }*/
     }
     
     /*useEffect(() => {
@@ -280,8 +288,9 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
         
         if(rotateStrike){
             console.log('rotate strike')
-            updateStriker({...nonStriker, position: 'striker'})
+            console.log(striker)
             updateNonStriker({...striker, position: 'nonStriker'})
+            updateNonStriker({...nonStriker, position: 'nonStriker'})
         }
         
     }, [ rotateStrike ])
@@ -520,15 +529,6 @@ const Over = ({ firstInningBatsmen, secondInningBatsmen }) => {
             </div>
             
             </>)}
-            
-            { matchState.matchStatus !== 'Ended' && nextOverButtonText && (
-                <button 
-                    className="bg-blue-500 font-bold ml-2 px-2 py-1 rounded text-white disabled:bg-gray-500 hover:bg-blue-600"
-                    onClick={nextOver}
-                >
-                    { nextOverButtonText }
-                </button>
-            )}
                 
         </div>
     )

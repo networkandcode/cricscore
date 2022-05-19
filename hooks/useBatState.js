@@ -80,7 +80,53 @@ const useBatStateProvider = () => {
         }
     }
     
-    const updateBattingScore = async( batsmanData ) => {
+    const updateBatsmanInDb =  async(batsmanData) => {
+        let promise
+        
+        const { $id, ...batsmanDataWithOutId } = batsmanData
+        if($id) {
+            console.log('updating batsmanData')
+            promise = appwrite.database.updateDocument(server.batScoreCollectionID, $id, { ...batsmanData })
+        } else {
+            console.log('creating batsmanData')
+            promise = appwrite.database.createDocument(server.batScoreCollectionID, 'unique()', { ...batsmanDataWithOutId })
+        }
+        
+        return await promise.then(
+            res => {
+                return res
+            }
+        )
+    }
+    
+    const updateBattingScore = ( ns, s, rotate ) => {
+        const nsRes = updateBatsmanInDb(ns)
+        const sRes = updateBatsmanInDb(s)
+        
+        nsRes.then(
+            res => {
+                if(rotate) {
+                    console.log('rotate ns', res)
+                    setStriker({ ...res, position: 'striker' })
+                } else {
+                    setNonStriker({ ...res })
+                }
+            }
+        )
+        
+        sRes.then(
+            res => {
+                if(rotate) {
+                    console.log('rotate s', res)
+                    setNonStriker({ ...res, position: 'nonStriker' })    
+                } else {
+                    setStriker({ ...res })    
+                }    
+            }
+        )
+    }
+    
+    /*const updateBattingScore = async( batsmanData ) => {
         let promise
         
         const { $id, ...batsmanDataWithOutId } = batsmanData
@@ -94,19 +140,54 @@ const useBatStateProvider = () => {
         
         await promise.then(
             res => {
-                if(batsmanData.position ==='striker') {
+                
+                let temp = battingScoreCard
+                
+                if(batsmanData.position === 'nonStriker') {
+                    let nonStrikerIdx
+                    
+                    temp.forEach( (i, idx) => {
+                        if( i.matchID === nonStriker.matchID && i.innings === nonStriker.innings && i.batsmanNo === nonStriker.batsmanNo ) {
+                            nonStrikerIdx = idx
+                        }
+                    })
+                    
+                    temp[nonStrikerIdx] = { ...temp[nonStrikerIdx], ...batsmanData, $id: res.$id }
+                    temp = [ ...temp ]
+                    
+                    console.log('before setting bat score', temp)
+                    setBattingScoreCard([ ...temp ])
+                    setNonStriker({ ...nonStriker, $id: res.$id })
+                    setStatus({ res: 'Update successful' , err: '' })
+                } else if(batsmanData.position === 'nonStriker') {
+                    let strikerIdx
+                    
+                    temp.forEach( (i, idx) => {
+                        if( i.matchID === striker.matchID && i.innings === striker.innings && i.batsmanNo === striker.batsmanNo ) {
+                            strikerIdx = idx
+                        }
+                    })
+                    
+                    temp[strikerIdx] = { ...temp[strikerIdx], ...batsmanData, $id: res.$id }
+                    temp = [ ...temp ]
+                    
+                    
+                    setBattingScoreCard([ ...temp ])
+                    setStriker({ ...striker, $id: res.$id })
+                    setStatus({ res: 'Update successful' , err: '' })
+                }
+                /*if(batsmanData.position ==='striker') {
                     setStriker({ ...res })
                 } else if(batsmanData.position === 'nonStriker') {
                     setNonStriker({ ...res })
-                } 
-                setStatus({ res: 'Update successful' , err: '' })
-            },
-            err => {
+                }*/
+            //},
+            /*err => {
                 setStatus({ res: '', err: 'Update unsuccessful' })
                 console.log(err.message)
             }
         )
-    }
+    }*/
     
     const batsmanOut =  async( position, batsmanData, nextBatsman ) => {
         console.log(batsmanData)
@@ -184,12 +265,11 @@ const useBatStateProvider = () => {
         let strikerIdx
         
         console.log(temp)
-        temp.forEach( i => {
+        temp.forEach( (i, idx) => {
             if( i.matchID === nonStriker.matchID && i.innings === nonStriker.innings && i.batsmanNo === nonStriker.batsmanNo ) {
-                nonStrikerIdx = temp.indexOf(i)
-                console.log(temp.indexOf(i))
+                nonStrikerIdx = idx
             } else if( i.matchID === striker.matchID && i.innings === striker.innings && i.batsmanNo === striker.batsmanNo ) {
-                strikerIdx = temp.indexOf(i)
+                strikerIdx = idx
             }
         })
         
@@ -209,6 +289,7 @@ const useBatStateProvider = () => {
             temp = [ ...temp, striker ]
         }
         
+        console.log('...temp', temp)
         setBattingScoreCard([ ...temp ])
     }
     
@@ -257,7 +338,8 @@ const useBatStateProvider = () => {
     }, [ innings, matchID ])
     
     useEffect(() => {
-        if(nonStriker.batsman && striker.batsman) {
+        // to prevent state issues while rotating strike
+        if(nonStriker.batsman !== striker.batsman) {
             console.log('set batting state')
             updateBattingScoreState()
         }

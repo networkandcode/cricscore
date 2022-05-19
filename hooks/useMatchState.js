@@ -1,5 +1,4 @@
 import { appwrite, server } from '../utils/appwrite'
-import { Query } from 'appwrite'
 import { useRouter } from 'next/router'
 import { createContext, useContext, useEffect, useState } from 'react'
 

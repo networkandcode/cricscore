@@ -6,19 +6,20 @@ import { useEffect } from 'react'
 
 const MatchSummary = () => {
     
-    const { firstInningsRuns, secondInningsOvers, secondInningsRuns, secondInningsWickets } = useBallStateContext()
+    const { firstInningsRuns, secondInningsCurrentOver, secondInningsRuns, secondInningsWickets } = useBallStateContext()
     const { firstBattingTeam, matchState, updateMatchStatus } = useMatchState()
     
     useEffect(() => {
-        if( secondInningsOvers === matchState.matchNoOfOvers ) {
+        if( parseInt(secondInningsCurrentOver) === matchState.matchNoOfOvers ) {
             if(firstInningsRuns > secondInningsRuns) {
                 updateMatchStatus({ ...matchState, matchStatus: 'Ended', winner: firstBattingTeam })
             } else if(firstInningsRuns === secondInningsRuns) {
                 updateMatchStatus({ ...matchState, matchStatus: 'Ended', winner: "Both  teams, its a Tie" })
             }
         }
-    }, [ secondInningsOvers, secondInningsRuns ])
+    }, [ secondInningsCurrentOver, secondInningsRuns ])
     
+    console.log( secondInningsCurrentOver, matchState)
     return (
         matchState.winner ? (
             <div className="mb-4 p-4 rounded shadow-md text-gray-500">
