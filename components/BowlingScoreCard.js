@@ -2,22 +2,22 @@ import { useBallStateContext } from '../hooks/useBallState'
 import { useEffect, useState } from 'react'
 
 const InningsBowlingScoreCard = ({ overs }) => (
-    <table className="table-auto">
+    <table>
         <thead>
             <tr>
-                <th>Over</th>
-                <th>Bowler</th>
-                <th>Runs</th>
-                <th>Wickets</th>
+                <th className="p-1 text-left"> Over </th>
+                <th className="p-1 text-left"> Bowler </th>
+                <th className="p-1 text-left"> Runs </th>
+                <th className="p-1 text-left"> Wickets </th>
             </tr>
         </thead>
         <tbody>
             {overs.map((i, idx) => (
                 <tr className="border-b-4" key={`${i}-${idx}`}>
-                    <td>{ i.balls === 6 ? i.over + 1 : `${i.over}.${i.balls}` }</td>
-                    <td>{i.bowler}</td>
-                    <td>{i.runs}</td>
-                    <td>{i.wickets}</td>
+                    <td className="p-1">{ i.balls === 6 ? i.over + 1 : `${i.over}.${i.balls}` }</td>
+                    <td className="p-1">{i.bowler}</td>
+                    <td className="p-1">{i.runs}</td>
+                    <td className="p-1">{i.wickets}</td>
                 </tr>
             ))}
         </tbody>
@@ -26,7 +26,7 @@ const InningsBowlingScoreCard = ({ overs }) => (
 
 const BowlingScoreCard = ({ innings }) => {
     
-    const { firstInningsOvers, firstInningsRuns, firstInningsWickets, secondInningsOvers, secondInningsRuns, secondInningsWickets } = useBallStateContext()
+    const { firstInningsCurrentOver, secondInningsCurrentOver, firstInningsOvers, firstInningsRuns, firstInningsWickets, secondInningsOvers, secondInningsRuns, secondInningsWickets } = useBallStateContext()
     
     const [ inningsOvers, setInningsOvers ]= useState([])
     
@@ -45,8 +45,12 @@ const BowlingScoreCard = ({ innings }) => {
                     <p className="font-bold mt-2 text-gray-500 text-sm"> Bowling score card:</p>
                     <InningsBowlingScoreCard overs={inningsOvers} />
                     <div className="mt-2">
-                        <span className="font-bold text-gray-500 text-xl"> Score:</span> <span className="font-bold text-blue-500 text-xl">
-                        { innings === 1 ? firstInningsRuns : secondInningsRuns }/{ innings === 1 ? firstInningsWickets : secondInningsWickets } </span>
+                        <span className="font-bold text-gray-500 m-2 text-xl"> Score:</span> <span className="font-bold text-blue-500 text-xl">
+                            { innings === 1 ? firstInningsRuns : secondInningsRuns }/{ innings === 1 ? firstInningsWickets : secondInningsWickets }
+                        </span>
+                        <span className="font-bold px-2 text-gray-500 text-xl">
+                            in { innings === 1 ? firstInningsCurrentOver : secondInningsCurrentOver } overs
+                        </span>
                     </div>
                 </>
             )}

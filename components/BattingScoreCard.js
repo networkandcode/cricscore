@@ -7,17 +7,20 @@ const InningsBattingScoreCard = ({ battingScoreCard }) => (
     <table className="table-auto">
         <tbody>
             { battingScoreCard.sort( (a,b) => (a.batsmanNo - b.batsmanNo) )   && battingScoreCard.map((i, idx) => (
-                <tr className="border-b-4" key={`${i}-${idx}`}>
-                    <td>
-                        { i.batsmanNo } { i.position }
+                <tr className={`border-b-4 ${i.position ==='striker' && 'font-bold'} ${i.position ==='nonStriker' && 'italic'}`} key={`${i}-${idx}`}>
+                    <td className="p-1">
+                        { i.batsmanNo }
                     </td>
-                    <td>
+                    
+                    <td className="p-1">
                         { i.batsman }
                     </td>
-                    <td>
+                    
+                    <td className="p-1">
                         { i.runs } ({ i.balls })
                     </td>
-                    <td>
+                    
+                    <td className="p-1">
                         { i.out === true ? 'Out' : 'Not out' }
                     </td>
                 </tr>
